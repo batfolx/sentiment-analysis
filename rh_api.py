@@ -6,7 +6,6 @@ def rh_login(username: str, password: str) -> str | None:
     """
 
     https://github.com/sanko/Robinhood/blob/master/Authentication.md#logging-in
-
     Logs into RobinHood with a given username and password
     :param username: The username
     :param password: The password

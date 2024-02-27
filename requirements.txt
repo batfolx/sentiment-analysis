@@ -4,3 +4,5 @@ yfinance
 nltk
 transformers
 benzinga
+tensorflow
+
