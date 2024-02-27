@@ -1,3 +1,15 @@
-## Sentiment Analysis
+# Sentiment Analysis
 
-It's time to analyze
+## Setup
+
+
+Install dependencies with `pip`
+
+```commandline
+pip install -r requirements.txt
+```
+
+
+## RobinHood API
+
+https://github.com/sanko/Robinhood
