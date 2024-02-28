@@ -115,6 +115,12 @@ def add_article_to_mongo(client: MongoClient, article: FinancialArticle):
 
 
 def get_article(client: MongoClient, article_id: int) -> typing.Optional[FinancialArticle]:
+    """
+    Gets an article from the database
+    :param client: The MongoClient
+    :param article_id: The article ID
+    :return: None if no article could be found, Finaicl
+    """
     collection = client[MONGO_DATABASE][MONGO_COLLECTION]
     res = collection.find_one({'articleId': article_id})
     if not res:
