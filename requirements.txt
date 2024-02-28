@@ -5,4 +5,5 @@ nltk
 transformers
 benzinga
 tensorflow
+pymongo
 

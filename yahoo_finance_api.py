@@ -2,7 +2,7 @@ import yfinance as yf
 import typing
 import time
 import random
-from bot_types import FinancialArticle
+from common import FinancialArticle
 
 
 def get_latest_news_articles_yahoo() -> typing.List[FinancialArticle]:
