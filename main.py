@@ -1,5 +1,7 @@
 import os
+import typing
 
+import common
 import rh_api
 import sentiment
 
@@ -35,5 +37,4 @@ def main():
     if not rh_token:
         raise EnvironmentError(f'Failed login to RobinHood. Perhaps a wrong username and password?')
 
-
-
+    companies_stocks: typing.List[dict] = common.read_stocks_csv_file()
