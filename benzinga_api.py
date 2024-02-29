@@ -31,8 +31,3 @@ def get_benzinga_news_articles() -> typing.List[FinancialArticle]:
                          story['tags'],
                          'Benzinga') for story in stories
     ]
-
-
-client = get_mongo_client()
-articles = get_benzinga_news_articles()
-client.close()

@@ -9,9 +9,6 @@ import rh_api
 import sentiment
 
 
-def get_articles() -> list:
-    return []
-
 def main():
     rh_username_key = 'RH_USERNAME'
     rh_username = os.getenv(rh_username_key)
@@ -49,6 +46,5 @@ def main():
             print(ticker)
 
 
-
-
-
+if __name__ == '__main__':
+    main()
