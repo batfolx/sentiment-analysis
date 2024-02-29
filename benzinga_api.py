@@ -1,7 +1,7 @@
 import os
 import typing
 
-from common import FinancialArticle
+from common import FinancialArticle, get_mongo_client, add_articles_to_mongo
 from benzinga import news_data
 
 
@@ -31,3 +31,8 @@ def get_benzinga_news_articles() -> typing.List[FinancialArticle]:
                          story['tags'],
                          'Benzinga') for story in stories
     ]
+
+
+client = get_mongo_client()
+articles = get_benzinga_news_articles()
+client.close()
