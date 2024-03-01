@@ -165,7 +165,3 @@ def get_article(client: MongoClient, article_id: int) -> typing.Optional[Financi
     )
     f.gpt_response = res['gptResponse']
     return f
-
-
-def get_prompt():
-    return "Given a financial article title, can you identify its sentiment, and if it has positive sentiment, can you try and extract the company that is announcing the news as well as any companies that it is aquiring? Give the answer to me in pure JSON,  with a key being 'sentiment' showing the sentiment, and another key being 'company' that is announcing the news, and any sub companies it may be investing or inquiring in with the key 'subCompanies'. If there are any actual numbers, represent them as floats"

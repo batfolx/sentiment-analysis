@@ -1,7 +1,3 @@
-yfinance
-transformers
 benzinga
-tensorflow
 pymongo
 openai
-
