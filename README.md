@@ -1,4 +1,11 @@
-# Sentiment Analysis
+# PySentia (Sentiment Analysis)
+
+
+<div align="center">
+  <img src="images/PySentia.png" alt="PySentia" width="600"/>
+</div>
+
+
 
 This bot aims to pull/scrape data from news articles regarding
 stocks and then analyzes the sentiment of the article to determine

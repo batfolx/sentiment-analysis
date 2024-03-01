@@ -7,6 +7,7 @@ import common
 import rh_api
 import sentiment
 
+
 def main():
     """
     rh_username_key = 'RH_USERNAME'
@@ -31,11 +32,13 @@ def main():
     mongo_client: pymongo.MongoClient = common.get_mongo_client()
     for article in articles:
         db_article = common.get_article(mongo_client, article.article_id)
-        # we have already processed it; it is in the database
+        # we have already processed it; it is in the database, continue to next article
         if db_article is not None and db_article.has_been_processed:
-            print(f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} has already been processed. Continuing...')
+            print(
+                f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} has already been processed. Continuing...')
             continue
 
+        # get chatgpt's response and sentiment
         full_article_with_title = f'{article.title}\n{article.body}'
         print(
             f'({common.get_formatted_time()}){common.get_calling_func_name()}: Processing article with ID {article.article_id}.')
@@ -43,24 +46,29 @@ def main():
         if gpt_response is None:
             article.has_been_processed = True
             common.add_article_to_mongo(mongo_client, article)
-            print(f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} has got no response from ChatGPT.')
+            print(
+                f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} has got no response from ChatGPT.')
             time.sleep(sleepy_time)
             continue
 
-        print(f'({common.get_formatted_time()}){common.get_calling_func_name()}: Processed article with ID {article.article_id} with response {gpt_response}')
+        # if the article sentiment is not positive, do not buy anything
+        print(
+            f'({common.get_formatted_time()}){common.get_calling_func_name()}: Processed article with ID {article.article_id} with response {gpt_response}')
         article_sentiment = gpt_response.get('sentiment', '').lower()
         article.sentiment = article_sentiment
         article.gpt_response = gpt_response
         if article_sentiment != 'positive':
             article.has_been_processed = True
             common.add_article_to_mongo(mongo_client, article)
-            print(f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} does NOT have positive sentiment. Continuing to next article.')
+            print(
+                f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} does NOT have positive sentiment. Continuing to next article.')
             time.sleep(sleepy_time)
             continue
 
+
         stock_tickers = article.stocks
-        for ticker in stock_tickers:
-            print(ticker)
+
+
 
         print(
             f'({common.get_formatted_time()}){common.get_calling_func_name()}: Finished article with article ID {article.article_id}. Sleeping for {sleepy_time} seconds before processing next article...')

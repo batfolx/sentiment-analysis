@@ -5,8 +5,9 @@ import csv
 import inspect
 from pymongo import MongoClient
 
-MONGO_DATABASE = 'News'
-MONGO_COLLECTION = 'Articles'
+MONGO_DATABASE = 'PySentia'
+MONGO_ARTICLES_COLLECTION = 'Articles'
+MONGO_STOCKS_COLLECTION = 'Stocks'
 
 
 class FinancialArticle:
@@ -118,7 +119,7 @@ def add_articles_to_mongo(client: MongoClient, articles: typing.List[FinancialAr
     :param articles: The articles to add
     :return: None
     """
-    collection = client[MONGO_DATABASE][MONGO_COLLECTION]
+    collection = client[MONGO_DATABASE][MONGO_ARTICLES_COLLECTION]
     collection.insert_many([f.to_dict() for f in articles])
 
 
@@ -129,7 +130,7 @@ def add_article_to_mongo(client: MongoClient, article: FinancialArticle):
     :param article: The article to add
     :return: None
     """
-    collection = client[MONGO_DATABASE][MONGO_COLLECTION]
+    collection = client[MONGO_DATABASE][MONGO_ARTICLES_COLLECTION]
     collection.insert_one(article.to_dict())
 
 
@@ -140,7 +141,7 @@ def get_article(client: MongoClient, article_id: int) -> typing.Optional[Financi
     :param article_id: The article ID
     :return: None if no article could be found, Finaicl
     """
-    collection = client[MONGO_DATABASE][MONGO_COLLECTION]
+    collection = client[MONGO_DATABASE][MONGO_ARTICLES_COLLECTION]
     res = collection.find_one({'articleId': article_id})
     if not res:
         return None

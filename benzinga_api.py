@@ -1,7 +1,7 @@
 import os
 import typing
 
-from common import FinancialArticle, get_mongo_client, add_articles_to_mongo
+from common import FinancialArticle
 from benzinga import news_data
 
 
