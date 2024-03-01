@@ -1,9 +1,7 @@
-beautifulsoup4
-requests
 yfinance
-nltk
 transformers
 benzinga
 tensorflow
 pymongo
+openai
 

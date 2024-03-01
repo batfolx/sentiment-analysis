@@ -1,6 +1,8 @@
+import datetime
 import typing
 import pathlib
 import csv
+import inspect
 from pymongo import MongoClient
 
 MONGO_DATABASE = 'News'
@@ -10,7 +12,7 @@ MONGO_COLLECTION = 'Articles'
 class FinancialArticle:
     def __init__(self, article_id: int, author: str, created: str, updated: str, title: str, teaser: str, body: str,
                  url: str, image: list, channels: list, stocks: list, tags: list, source: str,
-                 has_been_processed: bool = False):
+                 has_been_processed: bool = False, sentiment: str = 'unknown'):
         self.article_id = article_id
         self.author = author
         self.created = created
@@ -25,6 +27,8 @@ class FinancialArticle:
         self.tags = tags
         self.source = source
         self.has_been_processed = has_been_processed
+        self.sentiment = sentiment
+        self.gpt_response = {}
 
     def to_dict(self) -> dict:
         return {
@@ -41,8 +45,23 @@ class FinancialArticle:
             'stocks': self.stocks,
             'tags': self.source,
             'source': self.source,
-            'hasBeenProcessed': self.has_been_processed
+            'hasBeenProcessed': self.has_been_processed,
+            'sentiment': self.sentiment,
+            'gptResponse': self.gpt_response
         }
+
+
+def get_calling_func_name() -> str:
+    """
+    Gets the calling function name of this function. For logging purposes
+    :return: a string
+    """
+    return inspect.currentframe().f_back.f_code.co_name
+
+
+def get_formatted_time() -> str:
+    d = datetime.datetime.now()
+    return d.strftime("%I:%M %p %A, %B %dth, %Y")
 
 
 def get_company_with_ticker(stocks: typing.List[dict], ticker: str) -> typing.Optional[dict]:
@@ -126,7 +145,7 @@ def get_article(client: MongoClient, article_id: int) -> typing.Optional[Financi
     if not res:
         return None
 
-    return FinancialArticle(
+    f = FinancialArticle(
         res['articleId'],
         res['author'],
         res['created'],
@@ -140,8 +159,11 @@ def get_article(client: MongoClient, article_id: int) -> typing.Optional[Financi
         res['stocks'],
         res['tags'],
         res['source'],
-        res['hasBeenProcessed']
+        res['hasBeenProcessed'],
+        res['sentiment']
     )
+    f.gpt_response = res['gptResponse']
+    return f
 
 
 def get_prompt():
