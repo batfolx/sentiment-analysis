@@ -63,6 +63,8 @@ def main():
             time.sleep(sleepy_time)
             continue
 
+        # temporary
+        account_number = ''
 
         # if we get down here, lets buy some I suppose
         stock_tickers = article.stocks
@@ -74,9 +76,6 @@ def main():
             instrument_id = instrument.get("id")
             if not instrument_id:
                 continue
-
-
-
 
 
 

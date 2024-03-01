@@ -3,6 +3,8 @@ import typing
 import pathlib
 import csv
 import inspect
+import uuid
+
 from pymongo import MongoClient
 
 MONGO_DATABASE = 'PySentia'
@@ -50,6 +52,54 @@ class FinancialArticle:
             'sentiment': self.sentiment,
             'gptResponse': self.gpt_response
         }
+
+
+class StockEntry:
+    def __init__(self, article_id: int, ticker: str,
+                 instrument_info: dict,
+                 account_info: dict, price: float, stocks_bought: int, date_bought: datetime.datetime):
+        self.id = uuid.uuid4().hex
+        self.article_id = article_id
+        self.ticker = ticker
+        self.instrument_info = instrument_info
+        self.account_info = account_info
+        self.price = price
+        self.stocks_bought = stocks_bought
+        self.date_bought = date_bought
+        self.has_been_sold = False
+        self.date_sold = datetime.datetime.now()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'articleId': self.article_id,
+            'ticker': self.ticker,
+            'instrumentInfo': self.instrument_info,
+            'accountInfo': self.account_info,
+            'price': self.price,
+            'stocksBought': self.stocks_bought,
+            'dateBought': self.date_bought.isoformat(),
+            'hasBeenSold': self.has_been_sold,
+            'dateSold': self.date_sold.isoformat()
+        }
+
+    @staticmethod
+    def from_dict(res: dict):
+        s = StockEntry(
+            res['articleId'],
+            res['ticker'],
+            res['instrumentInfo'],
+            res['accountInfo'],
+            res['price'],
+            res['stocksBought'],
+            datetime.datetime.fromisoformat(res['dateBought']),
+        )
+
+        s.id = res['id']
+        s.has_been_sold = res['hasBeenSold']
+        s.date_sold = datetime.datetime.fromisoformat(res['dateSold'])
+
+        return s
 
 
 def get_calling_func_name() -> str:
