@@ -1,4 +1,3 @@
-import os
 import time
 import typing
 import pymongo
@@ -23,12 +22,11 @@ def main():
     rh_token = rh_api.rh_login(rh_username, rh_password)
     if not rh_token:
         raise EnvironmentError(f'Failed login to RobinHood. Perhaps a wrong username and password?')
-    """
 
+    #companies_stocks: typing.List[dict] = common.read_stocks_csv_file()
+    """
     sleepy_time = 5
-    companies_stocks: typing.List[dict] = common.read_stocks_csv_file()
     articles: typing.List[common.FinancialArticle] = benzinga_api.get_benzinga_news_articles()
-    sentiment_classifier_model = sentiment.get_financial_classifier_pipeline()
     mongo_client: pymongo.MongoClient = common.get_mongo_client()
     for article in articles:
         db_article = common.get_article(mongo_client, article.article_id)
@@ -66,7 +64,21 @@ def main():
             continue
 
 
+        # if we get down here, lets buy some I suppose
         stock_tickers = article.stocks
+        for ticker in stock_tickers:
+            instrument: typing.Optional[dict] = rh_api.rh_get_instrument_id_with_ticker(ticker)
+            if not instrument:
+                continue
+
+            instrument_id = instrument.get("id")
+            if not instrument_id:
+                continue
+
+
+
+
+
 
 
 
