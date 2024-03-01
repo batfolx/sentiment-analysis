@@ -184,6 +184,20 @@ def add_article_to_mongo(client: MongoClient, article: FinancialArticle):
     collection.insert_one(article.to_dict())
 
 
+def add_stock_entry_to_mongo(client: MongoClient, stock: StockEntry):
+    collection = client[MONGO_DATABASE][MONGO_STOCKS_COLLECTION]
+    collection.insert_one(stock.to_dict())
+
+
+def get_stock_entry_from_mongo(client: MongoClient, stock_entry_id: str) -> typing.Optional[StockEntry]:
+    collection = client[MONGO_DATABASE][MONGO_STOCKS_COLLECTION]
+    entry = collection.find_one({'id': stock_entry_id})
+    if not entry:
+        return None
+
+    return StockEntry.from_dict(dict(entry))
+
+
 def get_article(client: MongoClient, article_id: int) -> typing.Optional[FinancialArticle]:
     """
     Gets an article from the database
