@@ -51,6 +51,10 @@ You will need to set some environment variables
   - RobinHood username
 - RH_PASSWORD
   - RobinHood password
+- RH_TOKEN
+  - The RobinHood API token. If this is not set, then the program will prompt you for username/password
+- RH_ACCOUNT_NUMBER (optional)
+  - Your account number. You can view this in the RobinHood Web in Settings -> Personal Information -> See account numbers
 - OPENAI_API_KEY
   - The OpenAI API key to use
 

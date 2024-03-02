@@ -1,3 +1,5 @@
+import datetime
+import os
 import time
 import typing
 import pymongo
@@ -7,7 +9,55 @@ import rh_api
 import sentiment
 
 
-def main():
+def place_rh_order(client: pymongo.MongoClient, article: common.FinancialArticle, ticker: str) -> bool:
+    """
+    Places a Buy Order on RobinHood
+    :param client: The MongoDB client to add the stock entry in
+    :param article: The referencing article
+    :param ticker: The ticker symbol
+    :return: True if placed buy order, False otherwise
+    """
+    auth_token = os.getenv("RH_TOKEN")
+    if not auth_token:
+        return False
+
+    instrument: typing.Optional[dict] = rh_api.rh_get_instrument_id_with_ticker(ticker)
+    if not instrument:
+        return False
+
+    instrument_id = instrument.get("id")
+    if not instrument_id:
+        return False
+
+    account_info = rh_api.rh_get_account_info(auth_token)
+    if not account_info:
+        return False
+
+    quote = rh_api.rh_get_quote_data_with_ticker(auth_token, ticker)
+    if not quote:
+        return False
+
+    account_number: str = account_info.get('account_number', '')
+    account_cash: float = account_info.get('cash', 0.0)
+    ask_price: float = quote.get('ask_price', 0.0)
+
+    # we can't buy if the stock price is bigger
+    if ask_price > account_cash:
+        return False
+
+    print(f'Buying 1 share of {ticker} with price {ask_price}. Amount of cash we have in is {account_cash}')
+    order_resp = rh_api.rh_place_buy_order(auth_token, account_number, instrument_id, ticker, ask_price)
+    if not order_resp:
+        return False
+    print(f'Ordered 1 share of {ticker} with response {order_resp}')
+    s = common.StockEntry(article.article_id, ticker, instrument, account_info, ask_price, 1, datetime.datetime.now(),
+                          order_resp, quote)
+
+    common.add_stock_entry_to_mongo(client, s)
+    return True
+
+
+def analyze_articles():
     """
     rh_username_key = 'RH_USERNAME'
     rh_username = os.getenv(rh_username_key)
@@ -25,6 +75,7 @@ def main():
 
     #companies_stocks: typing.List[dict] = common.read_stocks_csv_file()
     """
+
     sleepy_time = 5
     articles: typing.List[common.FinancialArticle] = benzinga_api.get_benzinga_news_articles()
     mongo_client: pymongo.MongoClient = common.get_mongo_client()
@@ -32,8 +83,6 @@ def main():
         db_article = common.get_article(mongo_client, article.article_id)
         # we have already processed it; it is in the database, continue to next article
         if db_article is not None and db_article.has_been_processed:
-            print(
-                f'({common.get_formatted_time()}){common.get_calling_func_name()}: Article with ID {article.article_id} has already been processed. Continuing...')
             continue
 
         # get chatgpt's response and sentiment
@@ -63,23 +112,10 @@ def main():
             time.sleep(sleepy_time)
             continue
 
-        # temporary
-        account_number = ''
-
         # if we get down here, lets buy some I suppose
         stock_tickers = article.stocks
         for ticker in stock_tickers:
-            instrument: typing.Optional[dict] = rh_api.rh_get_instrument_id_with_ticker(ticker)
-            if not instrument:
-                continue
-
-            instrument_id = instrument.get("id")
-            if not instrument_id:
-                continue
-
-
-
-
+            place_rh_order(mongo_client, article, ticker)
 
         print(
             f'({common.get_formatted_time()}){common.get_calling_func_name()}: Finished article with article ID {article.article_id}. Sleeping for {sleepy_time} seconds before processing next article...')
@@ -87,6 +123,8 @@ def main():
         # wait some time before sending another article to OpenAI to avoid throttling
         time.sleep(sleepy_time)
 
+    mongo_client.close()
+
 
 if __name__ == '__main__':
-    main()
+    analyze_articles()

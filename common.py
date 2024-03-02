@@ -53,11 +53,33 @@ class FinancialArticle:
             'gptResponse': self.gpt_response
         }
 
+    @staticmethod
+    def from_dict(res: typing.Mapping):
+        f = FinancialArticle(
+            res['articleId'],
+            res['author'],
+            res['created'],
+            res['updated'],
+            res['title'],
+            res['teaser'],
+            res['body'],
+            res['url'],
+            res['image'],
+            res['channels'],
+            res['stocks'],
+            res['tags'],
+            res['source'],
+            res['hasBeenProcessed'],
+            res['sentiment']
+        )
+        f.gpt_response = res['gptResponse']
+        return f
+
 
 class StockEntry:
     def __init__(self, article_id: int, ticker: str,
                  instrument_info: dict,
-                 account_info: dict, price: float, stocks_bought: int, date_bought: datetime.datetime):
+                 account_info: dict, price: float, stocks_bought: int, date_bought: datetime.datetime, buy_order_info: dict, quote: dict):
         self.id = uuid.uuid4().hex
         self.article_id = article_id
         self.ticker = ticker
@@ -68,6 +90,8 @@ class StockEntry:
         self.date_bought = date_bought
         self.has_been_sold = False
         self.date_sold = datetime.datetime.now()
+        self.buy_order_info = buy_order_info
+        self.quote = quote
 
     def to_dict(self):
         return {
@@ -80,7 +104,9 @@ class StockEntry:
             'stocksBought': self.stocks_bought,
             'dateBought': self.date_bought.isoformat(),
             'hasBeenSold': self.has_been_sold,
-            'dateSold': self.date_sold.isoformat()
+            'dateSold': self.date_sold.isoformat(),
+            'buyOrderInfo': self.buy_order_info,
+            'quote': self.quote
         }
 
     @staticmethod
@@ -93,6 +119,8 @@ class StockEntry:
             res['price'],
             res['stocksBought'],
             datetime.datetime.fromisoformat(res['dateBought']),
+            res['buyOrderInfo'],
+            res['quote']
         )
 
         s.id = res['id']
@@ -210,22 +238,13 @@ def get_article(client: MongoClient, article_id: int) -> typing.Optional[Financi
     if not res:
         return None
 
-    f = FinancialArticle(
-        res['articleId'],
-        res['author'],
-        res['created'],
-        res['updated'],
-        res['title'],
-        res['teaser'],
-        res['body'],
-        res['url'],
-        res['image'],
-        res['channels'],
-        res['stocks'],
-        res['tags'],
-        res['source'],
-        res['hasBeenProcessed'],
-        res['sentiment']
-    )
-    f.gpt_response = res['gptResponse']
-    return f
+    return FinancialArticle.from_dict(res)
+
+
+def get_latest_article(client: MongoClient) -> typing.Optional[FinancialArticle]:
+    collection = client[MONGO_DATABASE][MONGO_ARTICLES_COLLECTION]
+    article = collection.find().limit(1)
+    try:
+        return FinancialArticle.from_dict(article[0])
+    except:
+        return None
